@@ -20,6 +20,7 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+if (!class_exists('SuperSizer')) {
 class SuperSizer {
 	 var $strOrgImgPath;
 	 var $strRImgPath;
@@ -605,10 +606,11 @@ class SuperSizer {
 		return true;
 	}
 }
+}
 
+if (!function_exists('smarty_function_supersizer')) {
 
-
-function smarty_cms_function_supersizer($p,$smarty) {
+function smarty_function_supersizer($p,$smarty) {
 		$SS = new stdClass;
 		$SS->capture = isset($p['capture']) ? trim($p['capture']):false;
 		
@@ -776,7 +778,7 @@ function smarty_cms_function_supersizer($p,$smarty) {
 		if($SS->unique!=true){$SS->U='';}else{if($SS->c!=false){$SS->cpName=str_replace(',','',$SS->c);}$SS->U="-w{$SS->w}-h{$SS->h}-p{$SS->percent}-q{$SS->q}-F{$SS->filter}-{$SS->fa1}-{$SS->fa2}-{$SS->fa3}-{$SS->fa4}-S{$SS->sample}-c{$SS->cpName}";}
 		
 		$SS->path=_PS_ROOT_DIR_."/".$SS->path;
-		$SS->root = isset($p['root']) ? $p['root'] : __PS_BASE_URI__;
+		$SS->root = isset($p['root']) ? $p['root'] : _THEME_PROD_PIC_DIR_;
 		$SS->overwrite = isset($p['overwrite']) ? $p['overwrite'] : false;
 		
 		if($SS->overwrite){
@@ -918,7 +920,7 @@ function smarty_cms_function_supersizer($p,$smarty) {
 		$ie_match=preg_match('/MSIE ([0-8]\.[0-8])/',$_SERVER['HTTP_USER_AGENT'],$reg);
 		$ie_match=$ie_match>0?true:false;
 		$SS->fileLINK=$SS->bustcache==true&&(!$SS->b64||$ie_match)?$SS->fileLINK."?".@filemtime($SS->filename):$SS->fileLINK;
-		if($ie_match){
+    if($ie_match){
 			if($SS->b64===true||$SS->b64=='$SS->b64'){
 				$SS->url=true;
 			}
@@ -996,77 +998,5 @@ function smarty_cms_function_supersizer($p,$smarty) {
 }
 
 
-function smarty_cms_help_function_supersizer() {
-	echo'<fieldset style=" color:#333333; background-color:#FFCC00;"><img src="http://www.corbensproducts.com/uploads/module/supersizer/superSizer300x225.min.png" style="float:left; padding-right:35px;" />';
-	echo'<form action="" method="post">
-<input type="hidden" name="clearcache" value="1"><input name="" type="submit" value="Clear the cache" />
-</form>';
-	if(isset($_POST['clearcache'])&&$_POST['clearcache']==1){
-		$objR = new SuperSizer();
-		$dirpath=_PS_UPLOAD_DIR_."/SuperSizerTmp/";
-		$deleted = $objR->recursive_rmdir($dirpath);
-		if($deleted){
-			echo "<h2>Cleared $dirpath</h2>";
-		}else{
-			echo "<h2>Sorry: $dirpath<br/><font color=\"red\"><strong>DOES NOT yet exist run the plug-in on an image first.</strong></font><br/></h2>";
-		}
-	}else{
-		echo "<br/><span style=\"color:#0066CC; font-weight:900;\">Your cache path is: "._PS_UPLOAD_DIR_."/SuperSizerTmp/</span>";
-	}
-	
-	?>
-    
 
-	<h3>What does this tag do?</h3>
-	<ul>
-	<li>Creates a resized version of an image on the fly.</li>
-    <li>Creates a cached version of the image to be served.</li>
-    <li>Supporting <strong>Subdomains, Caching, filters and more</strong></li>
-    <li>For a small slow changing sites, to huge user based sites<strong> GAIN FULL CONTROL!!!!</strong></li>
-	</ul>
-    </fieldset>
-	<h3>How do I use this tag?</h3>
-<h2><a href="http://wiki.cmsmadesimple.org/index.php/User_Handbook/Admin_Panel/Tags/supersizer#How_do_I_use_this_tag.3F" target="_blank">Get Detailed useage here.</a>
-</h2>
-<h3>What parameters does it take?</h3>
-<h2><a href="http://wiki.cmsmadesimple.org/index.php/User_Handbook/Admin_Panel/Tags/supersizer#What_parameters_does_it_take.3F" target="_blank">Get Detailed parameters here.</a>
-</h2>
-   
-<br /><br />
-<h3>Why so little help here?</h3>
-<h4>to keep it light and fast. <a href="http://wiki.cmsmadesimple.org/index.php/User_Handbook/Admin_Panel/Tags/supersizer" target="_blank"> Use wiki for help.</a>
-</h4>
-<h4>Also On:<br/>
- <a href="http://groups.google.com/group/supersizer?hl=en" target="_blank">
- <img src="http://groups.google.com/intl/en/images/logos/groups_logo_sm.gif" style="padding-right:35px;" />
- </a><br/>
-and<br/>
- <a href="http://forum.cmsmadesimple.org/index.php/topic,38094.0.html" target="_blank">
- <img src="http://www.cmsmadesimple.org/images/cmsmslogo.gif" style="padding-right:35px;" />
- </a>
-
-
-</h4>
-<br /><br />  
-   
-    <p><strong>Author:</strong> jeremyBass &lt;jeremybass@cableone.net&gt;<br />
-    <strong>Website:</strong> <a href="http://www.corbensproducts.com" target="_blank">CorbensProducts.com</a><br />
-    <strong>Support more mods like this:</strong><form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="8817675">
-<input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form><br/>
-
-    <strong>Version:</strong> BETA 0.9.6, 4.23.2010</p>
-	<?php
 }
-
-function smarty_cms_about_function_supersizer() {
-	?>
-	<p>Author: jeremyBass &lt;jeremybass@cableone.net&gt;<br />
-	<br />
-    Version: BETA 0.9.6, 4.23.2010</p>
-	<?php
-}
-?>
