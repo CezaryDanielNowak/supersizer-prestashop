@@ -1,4 +1,8 @@
 <?php
+
+# function super sizer adjusted to work with Prestashop
+# Cezary Nowak
+
 #CMS - CMS Made Simple
 #(c)2004 by Ted Kulp (wishy@users.sf.net)
 #This project's homepage is: http://cmsmadesimple.sf.net
@@ -582,11 +586,8 @@ class SuperSizer {
 
 	function recursive_rmdir($dir)
 	 {
-		 if (!function_exists('cmsms')) return false;
 		if(is_dir($dir)){
-			$config = cmsms()->GetConfig();
-			$root=$config['root_path'];
-			$dir=$root.str_replace($root, '',$dir);
+			$dir=_PS_ROOT_DIR_.str_replace(_PS_ROOT_DIR_, '',$dir);
 			$dir_handle=opendir($dir);
 		}else{
 			return false;
@@ -608,9 +609,6 @@ class SuperSizer {
 
 
 function smarty_cms_function_supersizer($p,$smarty) {
-		if (!function_exists('cmsms')) return false;
-		$config = cmsms()->GetConfig();
-
 		$SS = new stdClass;
 		$SS->capture = isset($p['capture']) ? trim($p['capture']):false;
 		
@@ -720,8 +718,8 @@ function smarty_cms_function_supersizer($p,$smarty) {
 		if($SS->capture!=false){$SS->path=$SS->capture;}
 		if($SS->strip_tags){
 			if (preg_match('#<(.*?)src="(.*?)"(.*?)/>#', $SS->path, $matches)) {$SS->path =  $matches[2];}
-			if ((substr($SS->path, 0,5))=="https"){$L=strlen($config['ssl_url']);$SS->path = substr_replace($SS->path, '', 0, $L);}	
-			if ((substr($SS->path, 0,4))=="http"){$L=strlen($config['root_url']);$SS->path = substr_replace($SS->path, '', 0, $L);}
+			if ((substr($SS->path, 0,5))=="https"){$L=strlen(_PS_BASE_URL_SSL_);$SS->path = substr_replace($SS->path, '', 0, $L);}	
+			if ((substr($SS->path, 0,4))=="http"){$L=strlen(_PS_BASE_URL_);$SS->path = substr_replace($SS->path, '', 0, $L);}
 			$matches = array(); 
 			if (preg_match('#[http|https]://(.*?)/(.*?)#', $SS->path, $matches)) {$SS->path =  $matches[0];}
 		}
@@ -733,13 +731,13 @@ function smarty_cms_function_supersizer($p,$smarty) {
 		$SS->ext = strtolower(substr($SS->path, (strrpos($SS->path,".")+1)));
 		$SS->filebasename = basename($SS->path, $SS->OlDextension);
 		if($SS->capture){
-			if(!file_exists($config['root_path']."/uploads/SuperSizerTmp/captured")){mkdir($config['root_path']."/uploads/SuperSizerTmp/captured", 0777, true);}
+			if(!file_exists(_PS_ROOT_DIR_."/uploads/SuperSizerTmp/captured")){mkdir(_PS_ROOT_DIR_."/uploads/SuperSizerTmp/captured", 0777, true);}
 			$SS->path="/uploads/SuperSizerTmp/captured/".$SS->prefix.$SS->filebasename.$SS->suffix.'.'.$SS->ext;
-			if(!file_exists($config['root_path'].$SS->path)){
+			if(!file_exists(_PS_ROOT_DIR_.$SS->path)){
 				if (!function_exists('copy')) {
-					copy_alt($SS->capture,$config['root_path'].$SS->path);
+					copy_alt($SS->capture,_PS_ROOT_DIR_.$SS->path);
 				}else{
-					copy($SS->capture,$config['root_path'].$SS->path);
+					copy($SS->capture,_PS_ROOT_DIR_.$SS->path);
 				}
 			}
 		}
@@ -777,8 +775,8 @@ function smarty_cms_function_supersizer($p,$smarty) {
 		$SS->cpName='';
 		if($SS->unique!=true){$SS->U='';}else{if($SS->c!=false){$SS->cpName=str_replace(',','',$SS->c);}$SS->U="-w{$SS->w}-h{$SS->h}-p{$SS->percent}-q{$SS->q}-F{$SS->filter}-{$SS->fa1}-{$SS->fa2}-{$SS->fa3}-{$SS->fa4}-S{$SS->sample}-c{$SS->cpName}";}
 		
-		$SS->path=$config['root_path']."/".$SS->path;
-		$SS->root = isset($p['root']) ? $p['root'] : $config['uploads_url'];
+		$SS->path=_PS_ROOT_DIR_."/".$SS->path;
+		$SS->root = isset($p['root']) ? $p['root'] : __PS_BASE_URI__;
 		$SS->overwrite = isset($p['overwrite']) ? $p['overwrite'] : false;
 		
 		if($SS->overwrite){
@@ -787,9 +785,9 @@ function smarty_cms_function_supersizer($p,$smarty) {
 			$SS->path_orgin=$SS->to;
 			$SS->to = ltrim($SS->to,"/");
 			
-			$SS->filename = $config['root_path'].'/'.$SS->to;
+			$SS->filename = _PS_ROOT_DIR_.'/'.$SS->to;
 		}else{
-			$SS->filename=$config['uploads_path']."/SuperSizerTmp/".$SS->subdir.$SS->prefix.$SS->filebasename.$SS->U.$SS->suffix.".".$SS->ext;
+			$SS->filename=_PS_UPLOAD_DIR_."/SuperSizerTmp/".$SS->subdir.$SS->prefix.$SS->filebasename.$SS->U.$SS->suffix.".".$SS->ext;
 		}
 		
 		$SS->fileLINK=$SS->root."/SuperSizerTmp/".$SS->subdir.$SS->prefix.$SS->filebasename.$SS->U.$SS->suffix.".".$SS->ext;
@@ -827,10 +825,10 @@ function smarty_cms_function_supersizer($p,$smarty) {
 				set_memory($SS->path,$SS->memory_limit,$SS->w,$SS->h);
 				$SS->new_limit=get_memory();
 			}
-			if(!file_exists($config['uploads_path']."/SuperSizerTmp/".$SS->subdir)){
-				mkdir($config['uploads_path']."/SuperSizerTmp/".$SS->subdir, 0777, true);
+			if(!file_exists(_PS_UPLOAD_DIR_."/SuperSizerTmp/".$SS->subdir)){
+				mkdir(_PS_UPLOAD_DIR_."/SuperSizerTmp/".$SS->subdir, 0777, true);
 			}
-			$SS->capture=$config['root_path'].$SS->path;
+			$SS->capture=_PS_ROOT_DIR_.$SS->path;
 			
 			$SS->fill = isset($p['fill']) ? $p['fill']:false;
 			$SS->fit = isset($p['fit']) ? $p['fit']:false;
@@ -927,20 +925,20 @@ function smarty_cms_function_supersizer($p,$smarty) {
 			$SS->b64=false;
 		}
 		if($SS->b64){
-			if(!file_exists($config['uploads_path']."/SuperSizerTmp/b64/".$SS->subdir)){
-				mkdir($config['uploads_path']."/SuperSizerTmp/b64/".$SS->subdir, 0777, true);
+			if(!file_exists(_PS_UPLOAD_DIR_."/SuperSizerTmp/b64/".$SS->subdir)){
+				mkdir(_PS_UPLOAD_DIR_."/SuperSizerTmp/b64/".$SS->subdir, 0777, true);
 			}	
 			$SS->path="/uploads/SuperSizerTmp/b64/".$SS->prefix.$SS->filebasename.$SS->suffix.'.tmp';
 			$SS->fileLINK=$SS->passthru==true?$SS->path_orgin:$SS->fileLINK;
-			if(!file_exists($config['root_path'].$SS->path)||$SS->dynamic==true){
+			if(!file_exists(_PS_ROOT_DIR_.$SS->path)||$SS->dynamic==true){
 				if (!function_exists('copy')) {
-					copy_alt($SS->fileLINK,$config['root_path'].$SS->path,'/');
+					copy_alt($SS->fileLINK,_PS_ROOT_DIR_.$SS->path,'/');
 				}else{
-					copy($SS->fileLINK,$config['root_path'].$SS->path);
+					copy($SS->fileLINK,_PS_ROOT_DIR_.$SS->path);
 				}
 				$data=base64_encode(file_get_contents($SS->fileLINK));
 				// and put it out there
-				$fn = $config['root_path'].$SS->path;
+				$fn = _PS_ROOT_DIR_.$SS->path;
 				$fp = fopen($fn, "w");
 				if (!$fp) {
 					return 0;
@@ -948,7 +946,7 @@ function smarty_cms_function_supersizer($p,$smarty) {
 				fwrite($fp, $data);
 				fclose($fp);
 			}else{
-				$data=file_get_contents($config['root_path'].$SS->path);
+				$data=file_get_contents(_PS_ROOT_DIR_.$SS->path);
 			}
 			if($SS->b64==='tag'){
 				$img= @getimagesize($fileLINK);
@@ -1000,17 +998,12 @@ function smarty_cms_function_supersizer($p,$smarty) {
 
 function smarty_cms_help_function_supersizer() {
 	echo'<fieldset style=" color:#333333; background-color:#FFCC00;"><img src="http://www.corbensproducts.com/uploads/module/supersizer/superSizer300x225.min.png" style="float:left; padding-right:35px;" />';
-global $gCms;
-		$config = $gCms->GetConfig();
-	
-
-	
 	echo'<form action="" method="post">
 <input type="hidden" name="clearcache" value="1"><input name="" type="submit" value="Clear the cache" />
 </form>';
 	if(isset($_POST['clearcache'])&&$_POST['clearcache']==1){
 		$objR = new SuperSizer();
-		$dirpath=$config['uploads_path']."/SuperSizerTmp/";
+		$dirpath=_PS_UPLOAD_DIR_."/SuperSizerTmp/";
 		$deleted = $objR->recursive_rmdir($dirpath);
 		if($deleted){
 			echo "<h2>Cleared $dirpath</h2>";
@@ -1018,7 +1011,7 @@ global $gCms;
 			echo "<h2>Sorry: $dirpath<br/><font color=\"red\"><strong>DOES NOT yet exist run the plug-in on an image first.</strong></font><br/></h2>";
 		}
 	}else{
-		echo "<br/><span style=\"color:#0066CC; font-weight:900;\">Your cache path is: ".$config['uploads_path']."/SuperSizerTmp/</span>";
+		echo "<br/><span style=\"color:#0066CC; font-weight:900;\">Your cache path is: "._PS_UPLOAD_DIR_."/SuperSizerTmp/</span>";
 	}
 	
 	?>
